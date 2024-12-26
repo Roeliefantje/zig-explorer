@@ -70,7 +70,10 @@ pub fn createLayout(layout_items: LayoutItems) cl.ClayArray(cl.RenderCommand) {
 
         cl.UI(&.{
             .ID("MainContent"),
-            .layout(.{ .sizing = .grow }),
+            .layout(.{
+                .sizing = .grow,
+                .direction = .TOP_TO_BOTTOM,
+            }),
             .rectangle(.{ .color = light_grey }),
         });
         {

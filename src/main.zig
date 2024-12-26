@@ -45,19 +45,17 @@ pub fn main() anyerror!void {
             .main_screen_items = std.ArrayList(ui.UiItem).init(allocator),
             .side_bar_items = std.ArrayList(ui.UiItem).init(allocator),
         };
+
         _ = &layout_items;
 
         //Add stuff to the screen
-        const folders = try dir.getFolders(current_dir, allocator);
-
-        for (folders) |folder| {
-            // cl.text(folder, cl.Config.text(.{.font_size = 24, .color = light_grey}));
-            // const config: []const Config = .{}
-            const item = ui.UiItem{ .children = null, .config = &.{ .ID(folder), .rectangle(.{ .color = white }), .layout(.{ .sizing = .{ .w = .grow }, .padding = .all(1), .alignment = .{ .x = .LEFT } }) }, .text = ui.UiText{ .string = folder, .config = cl.Config.text(.{ .font_size = 24, .color = red }) } };
-            // _ = &item;
-            try layout_items.main_screen_items.append(item);
-        }
-
+        try dir.getFolderUiItems(current_dir, allocator, &layout_items.main_screen_items);
+        // for (layout_items.main_screen_items.items) |folder| {
+        //     std.debug.print("item: {any}\n", .{folder});
+        // }
+        // std.debug.print("folders: {any}\n", .{folders});
+        // try layout_items.main_screen_items.appendSlice(folders);
+        // std.debug.print("folders: {any}\n", .{layout_items.main_screen_items.items});
         var render_commands = ui.createLayout(layout_items);
 
         rl.beginDrawing();
