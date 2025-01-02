@@ -1,14 +1,14 @@
 const std = @import("std");
 const rl = @import("raylib");
 const cl = @import("zclay");
-const renderer = @import("raylib_render_clay.zig");
+const renderer = @import("../ui/raylib_render_clay.zig");
 
 const light_grey: cl.Color = .{ 224, 215, 210, 255 };
 const red: cl.Color = .{ 168, 66, 28, 255 };
 const orange: cl.Color = .{ 225, 138, 50, 255 };
 const white: cl.Color = .{ 250, 250, 255, 255 };
 
-const MainScreen = struct {
+pub const MainScreen = struct {
     side_bar_components: std.ArrayList(Component),
     main_screen_components: std.ArrayList(Component),
 
@@ -37,7 +37,7 @@ const MainScreen = struct {
                 defer cl.CLOSE(); //Close Sidebar
 
                 for (self.side_bar_components.items) |child| {
-                    child.render_component();
+                    try child.render_component();
                 }
             }
 
@@ -53,7 +53,7 @@ const MainScreen = struct {
                 defer cl.CLOSE();
 
                 for (self.main_screen_components.items) |child| {
-                    child.render_component();
+                    try child.render_component();
                 }
             }
         }
@@ -63,11 +63,43 @@ const MainScreen = struct {
 
 const Folder = struct {
     name: []const u8,
+
+    pub fn render_component(self: Folder) !void {
+        cl.UI(&.{
+            .ID(self.name),
+            .layout(.{
+                .sizing = .{ .h = .fixed(28), .w = .grow },
+                .padding = .{ .x = 10 },
+                .alignment = .{ .x = .LEFT, .y = .CENTER },
+            }),
+            .rectangle(.{ .color = light_grey }),
+        });
+
+        cl.text(self.name, cl.Config.text(.{ .font_size = 24, .color = red }));
+
+        defer cl.CLOSE();
+    }
 };
 
 const File = struct {
     name: []const u8,
     filetype: []const u8,
+
+    pub fn render_component(self: File) !void {
+        cl.UI(&.{
+            .ID(self.name),
+            .layout(.{
+                .sizing = .{ .h = .fixed(28), .w = .grow },
+                .padding = .{ .x = 10 },
+                .alignment = .{ .x = .LEFT, .y = .CENTER },
+            }),
+            .rectangle(.{ .color = light_grey }),
+        });
+
+        cl.text(self.name, cl.Config.text(.{ .font_size = 24, .color = red }));
+
+        defer cl.CLOSE();
+    }
 };
 
 pub const Component = union(enum) {
@@ -75,6 +107,9 @@ pub const Component = union(enum) {
     file: File,
 
     pub fn render_component(self: Component) !void {
-        _ = self;
+        switch (self) {
+            .folder => |folder| try folder.render_component(),
+            .file => |file| try file.render_component(),
+        }
     }
 };

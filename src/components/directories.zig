@@ -1,68 +1,35 @@
 const std = @import("std");
 const cl = @import("zclay");
 const ui = @import("../ui/ui_renderer.zig");
+const component = @import("mod.zig");
 const ArrayList = std.ArrayList;
 
-const light_grey: cl.Color = .{ 224, 215, 210, 255 };
-const white: cl.Color = .{ 250, 250, 255, 255 };
-
-const uiFolderLayoutConfig: cl.LayoutConfig = cl.LayoutConfig{
-    .direction = .LEFT_TO_RIGHT,
-    .sizing = .{ .h = .fixed(10), .w = .grow },
-    .alignment = .{ .x = .LEFT, .y = .CENTER },
-};
-// const uiFolderConfig: []const Config = &.{.ID = }
-
-fn getFolderStrings(workdir: std.fs.Dir, allocator: std.mem.Allocator) ![][]const u8 {
-    var list = ArrayList([]const u8).init(allocator);
+pub fn getFolders(workdir: std.fs.Dir, list: *ArrayList(component.Component), allocator: std.mem.Allocator) !void {
+    // var list = ArrayList([]const u8).init(allocator);
 
     var iter = workdir.iterate();
     while (try iter.next()) |entry| {
         if (entry.kind == .directory) {
             const name = try allocator.alloc(u8, entry.name.len);
             @memcpy(name, entry.name);
-            try list.append(name); // Append the allocated slice
+
+            const comp = component.Component{ .folder = .{ .name = name } };
+            try list.append(comp); // Append the allocated slice
         }
     }
-
-    return list.toOwnedSlice();
 }
 
-pub fn getFolderUiItems(workdir: std.fs.Dir, allocator: std.mem.Allocator, list: *ArrayList(ui.UiItem)) !void {
-    const folders = try getFolderStrings(workdir, allocator);
-    defer allocator.free(folders);
+pub fn getFiles(workdir: std.fs.Dir, list: *ArrayList(component.Component), allocator: std.mem.Allocator) !void {
+    // var list = ArrayList([]const u8).init(allocator);
 
-    // var items = ArrayList(ui.UiItem).init(allocator);
-    for (folders) |folder| {
-        // for (folders) |_folder| {
+    var iter = workdir.iterate();
+    while (try iter.next()) |entry| {
+        if (entry.kind == .file) {
+            const name = try allocator.alloc(u8, entry.name.len);
+            @memcpy(name, entry.name);
 
-        const id = try allocator.alloc(u8, folder.len);
-        @memcpy(id, folder);
-
-        const item = ui.UiItem{
-            .children = null,
-            .config = &.{
-                // .ID(folder),
-                .layout(.{
-                    .direction = .LEFT_TO_RIGHT,
-                    .sizing = .{ .h = .fixed(10), .w = .grow },
-                    .alignment = .{ .x = .LEFT, .y = .CENTER },
-                }),
-                // .rectangle(.{ .color = light_grey }),
-                .border(cl.BorderElementConfig.all(white, 1, 0)),
-
-                // .layout = uiFolderLayoutConfig,
-            },
-            // .text = null,
-            .text = ui.UiText{
-                .string = folder,
-                .config = cl.Config.text(.{ .font_size = 24, .color = white }),
-            },
-        };
-
-        try list.*.append(item);
+            const comp = component.Component{ .file = .{ .name = name, .filetype = "TODO" } };
+            try list.append(comp); // Append the allocated slice
+        }
     }
-
-    // return items.toOwnedSlice();
-    return;
 }

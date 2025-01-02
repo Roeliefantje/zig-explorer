@@ -4,6 +4,7 @@ const cl = @import("zclay");
 const renderer = @import("ui/raylib_render_clay.zig");
 const ui = @import("ui/ui_renderer.zig");
 const dir = @import("components/directories.zig");
+const components = @import("components/mod.zig");
 
 const light_grey: cl.Color = .{ 224, 215, 210, 255 };
 const red: cl.Color = .{ 168, 66, 28, 255 };
@@ -34,6 +35,7 @@ pub fn main() anyerror!void {
         ".",
         .{ .iterate = true },
     );
+    _ = &current_dir;
 
     var debug_mode_enabled = false;
     while (!rl.windowShouldClose()) {
@@ -41,22 +43,18 @@ pub fn main() anyerror!void {
         set_pointer_state();
         update_scroll_containers();
         set_layout_dimensions();
-        var layout_items = ui.LayoutItems{
-            .main_screen_items = std.ArrayList(ui.UiItem).init(allocator),
-            .side_bar_items = std.ArrayList(ui.UiItem).init(allocator),
+
+        var main_screen = components.MainScreen{
+            .main_screen_components = std.ArrayList(components.Component).init(allocator),
+            .side_bar_components = std.ArrayList(components.Component).init(allocator),
         };
 
-        _ = &layout_items;
+        try main_screen.main_screen_components.append(components.Component{ .folder = .{ .name = "../" } });
 
-        //Add stuff to the screen
-        try dir.getFolderUiItems(current_dir, allocator, &layout_items.main_screen_items);
-        // for (layout_items.main_screen_items.items) |folder| {
-        //     std.debug.print("item: {any}\n", .{folder});
-        // }
-        // std.debug.print("folders: {any}\n", .{folders});
-        // try layout_items.main_screen_items.appendSlice(folders);
-        // std.debug.print("folders: {any}\n", .{layout_items.main_screen_items.items});
-        var render_commands = ui.createLayout(layout_items);
+        try dir.getFolders(current_dir, &main_screen.main_screen_components, allocator);
+        try dir.getFiles(current_dir, &main_screen.main_screen_components, allocator);
+
+        var render_commands = try main_screen.render_screen();
 
         rl.beginDrawing();
         renderer.clayRaylibRender(&render_commands, allocator);
