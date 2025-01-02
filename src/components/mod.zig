@@ -5,6 +5,7 @@ const renderer = @import("../ui/raylib_render_clay.zig");
 
 const light_grey: cl.Color = .{ 224, 215, 210, 255 };
 const red: cl.Color = .{ 168, 66, 28, 255 };
+const blue: cl.Color = .{ 28, 66, 168, 255 };
 const orange: cl.Color = .{ 225, 138, 50, 255 };
 const white: cl.Color = .{ 250, 250, 255, 255 };
 
@@ -96,7 +97,7 @@ const File = struct {
             .rectangle(.{ .color = light_grey }),
         });
 
-        cl.text(self.name, cl.Config.text(.{ .font_size = 24, .color = red }));
+        cl.text(self.name, cl.Config.text(.{ .font_size = 24, .color = blue }));
 
         defer cl.CLOSE();
     }
